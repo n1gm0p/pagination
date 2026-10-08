@@ -1,12 +1,5 @@
 import ProductCard from "@/components/ProductCard";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import ProductPagination from "@/components/ProductPagination";
 import { getProducts } from "@/db/queries";
 
 export default async function Home({
@@ -16,7 +9,13 @@ export default async function Home({
   searchParams: Promise<{ page?: string }>;
 }) {
   const params = await searchParams;
-  const page = Number(params.page) || 1; // если page нет, берём 1
+
+  // Если page нет, это не число или оно меньше 1, берём 1
+  let page = Number(params.page) || 1;
+  if (page < 1) {
+    page = 1;
+  }
+
   const { products, pages } = await getProducts(page, 6);
 
   return (
@@ -29,29 +28,7 @@ export default async function Home({
         ))}
       </div>
 
-      {/* Пагинация из shadcn/ui. Ссылки меняют ?page= в адресной строке */}
-      <Pagination className="mt-8">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href={`?page=${page > 1 ? page - 1 : 1}`} />
-          </PaginationItem>
-
-          {Array.from({ length: pages }, (_, i) => i + 1).map((pageNumber) => (
-            <PaginationItem key={pageNumber}>
-              <PaginationLink
-                href={`?page=${pageNumber}`}
-                isActive={pageNumber === page}
-              >
-                {pageNumber}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-
-          <PaginationItem>
-            <PaginationNext href={`?page=${page < pages ? page + 1 : pages}`} />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <ProductPagination page={page} pages={pages} />
     </main>
   );
 }

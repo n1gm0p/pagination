@@ -1,4 +1,4 @@
-import { count } from "drizzle-orm";
+import { asc, count } from "drizzle-orm";
 import { db } from "./index";
 import { products } from "./schema";
 
@@ -11,12 +11,13 @@ export async function getProducts(page = 1, pageSize = 6) {
   const productList = await db
     .select()
     .from(products)
+    .orderBy(asc(products.id)) // сортировка по id
     .limit(pageSize) // сколько строк взять
     .offset(offset); // сколько строк пропустить
 
   // Считаем все товары в таблице, чтобы узнать число страниц.
-  const result = await db.select({ total: count() }).from(products);
-  const total = result[0].total;
+  const totalResult = await db.select({ total: count() }).from(products);
+  const total = totalResult[0]?.total ?? 0;
   const pages = Math.ceil(total / pageSize);
 
   return { products: productList, pages };
